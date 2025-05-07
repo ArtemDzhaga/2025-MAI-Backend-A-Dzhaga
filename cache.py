@@ -5,7 +5,7 @@ class LRUCache:
 
     def get(self, key: str) -> str:
         if key not in self.cache:
-            return ''
+            return ""
         # Извлекаем значение и обновляем порядок, перемещая элемент в конец (наиболее недавно использованный)
         value = self.cache.pop(key)
         self.cache[key] = value
