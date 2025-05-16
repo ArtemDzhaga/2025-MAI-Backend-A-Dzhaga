@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import (
     TopicViewSet, ProjectViewSet, TaskViewSet,
     SubtaskViewSet, CommentViewSet, DocumentViewSet,
-    DocumentVersionViewSet, TemplateViewSet
+    DocumentVersionViewSet, TemplateViewSet, FavoriteViewSet
 )
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
@@ -18,6 +18,7 @@ router.register(r'comments', CommentViewSet)
 router.register(r'documents', DocumentViewSet)
 router.register(r'document-versions', DocumentVersionViewSet)
 router.register(r'templates', TemplateViewSet)
+router.register(r'favorites', FavoriteViewSet, basename='favorite')
 
 schema_view = get_schema_view(
     openapi.Info(

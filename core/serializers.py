@@ -2,7 +2,8 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import (
     Topic, Project, ProjectSettings, Task, TaskDetail,
-    Subtask, Comment, Document, DocumentVersion, Template
+    Subtask, Comment, Document, DocumentVersion, Template,
+    Favorite
 )
 
 class UserSerializer(serializers.ModelSerializer):
@@ -102,4 +103,10 @@ class DocumentSerializer(serializers.ModelSerializer):
 class TemplateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Template
-        fields = ['id', 'name', 'content', 'topic', 'created_at', 'updated_at'] 
+        fields = ['id', 'name', 'content', 'topic', 'created_at', 'updated_at']
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Favorite
+        fields = ['id', 'user', 'project', 'task', 'created_at']
+        read_only_fields = ['user', 'created_at'] 

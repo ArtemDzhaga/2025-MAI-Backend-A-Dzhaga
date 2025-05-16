@@ -1,14 +1,17 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from .models import (
     Topic, Project, ProjectSettings, Task, TaskDetail,
-    Subtask, Comment, Document, DocumentVersion, Template
+    Subtask, Comment, Document, DocumentVersion, Template,
+    Favorite
 )
 from .serializers import (
     TopicSerializer, ProjectSerializer, TaskSerializer,
     SubtaskSerializer, CommentSerializer, DocumentSerializer,
-    DocumentVersionSerializer, TemplateSerializer
+    DocumentVersionSerializer, TemplateSerializer, FavoriteSerializer
 )
 
 # Create your views here.
@@ -20,6 +23,7 @@ class TopicViewSet(viewsets.ModelViewSet):
     filterset_fields = ['name']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_queryset(self):
         queryset = Topic.objects.all()
@@ -34,6 +38,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
     filterset_fields = ['topic', 'name']
     search_fields = ['name', 'description']
     ordering_fields = ['name', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
     def get_queryset(self):
         return Project.objects.get_projects_with_tasks_count()
@@ -45,6 +50,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'status', 'assigned_to']
     search_fields = ['title', 'description']
     ordering_fields = ['title', 'status', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
 
     def get_queryset(self):
         queryset = Task.objects.all()
@@ -62,6 +68,7 @@ class SubtaskViewSet(viewsets.ModelViewSet):
     filterset_fields = ['task', 'status']
     search_fields = ['title', 'description']
     ordering_fields = ['title', 'status', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'patch', 'delete']
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -70,6 +77,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['task', 'subtask', 'author']
     search_fields = ['content']
     ordering_fields = ['created_at']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
 class DocumentViewSet(viewsets.ModelViewSet):
     queryset = Document.objects.all()
@@ -78,14 +86,16 @@ class DocumentViewSet(viewsets.ModelViewSet):
     filterset_fields = ['project', 'task']
     search_fields = ['title', 'content']
     ordering_fields = ['title', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'delete']
 
-class DocumentVersionViewSet(viewsets.ModelViewSet):
+class DocumentVersionViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = DocumentVersion.objects.all()
     serializer_class = DocumentVersionSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['document', 'created_by']
     search_fields = ['content']
     ordering_fields = ['version_number', 'created_at']
+    http_method_names = ['get']
 
 class TemplateViewSet(viewsets.ModelViewSet):
     queryset = Template.objects.all()
@@ -94,3 +104,18 @@ class TemplateViewSet(viewsets.ModelViewSet):
     filterset_fields = ['topic']
     search_fields = ['name', 'content']
     ordering_fields = ['name', 'created_at']
+    http_method_names = ['get', 'post', 'put', 'delete']
+
+class FavoriteViewSet(viewsets.ModelViewSet):
+    serializer_class = FavoriteSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
+    filterset_fields = ['project', 'task']
+    ordering_fields = ['created_at']
+    http_method_names = ['get', 'post', 'delete']
+
+    def get_queryset(self):
+        return Favorite.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)

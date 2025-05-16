@@ -1,27 +1,64 @@
+from collections import OrderedDict
+
 class LRUCache:
     def __init__(self, capacity: int = 10) -> None:
+        """
+        Инициализация LRU кэша с заданной емкостью
+        Args:
+            capacity (int): Максимальное количество элементов, которые могут храниться в кэше
+        """
         self.capacity = capacity
-        self.cache = {}  # основной словарь для хранения ключей и значений
+        self.cache = OrderedDict()
 
     def get(self, key: str) -> str:
+        """
+        Получить значение из кэша по ключу
+        Args:
+            key (str): Ключ для получения значения
+        Returns:
+            str: Значение для ключа или пустая строка, если ключ не существует
+        """
         if key not in self.cache:
-            return ""
-        # Извлекаем значение и обновляем порядок, перемещая элемент в конец (наиболее недавно использованный)
-        value = self.cache.pop(key)
-        self.cache[key] = value
-        return value
+            return ''
+        
+        # Перемещаем использованный ключ в конец (наиболее недавно использованный)
+        self.cache.move_to_end(key)
+        return self.cache[key]
 
     def set(self, key: str, value: str) -> None:
-        # Если ключ уже есть – удаляем его, чтобы обновить порядок вставки
+        """
+        Установить значение в кэше для заданного ключа
+        Args:
+            key (str): Ключ для установки значения
+            value (str): Значение для установки
+        """
+        # Если ключ существует, удаляем его для обновления позиции
         if key in self.cache:
             self.cache.pop(key)
-        # Если достигнута ёмкость, удаляем наименее недавно использованный элемент (первый в словаре)
+        # Если кэш полон, удаляем наименее недавно использованный элемент (первый элемент)
         elif len(self.cache) >= self.capacity:
-            oldest_key = next(iter(self.cache))
-            self.cache.pop(oldest_key)
+            self.cache.popitem(last=False)
+        
+        # Добавляем новую пару ключ-значение
         self.cache[key] = value
 
     def rem(self, key: str) -> None:
-        # Удаляем ключ, если он существует
+        """
+        Удалить пару ключ-значение из кэша
+        Args:
+            key (str): Ключ для удаления
+        """
         if key in self.cache:
             self.cache.pop(key)
+
+def main():
+    cache = LRUCache(100)
+    cache.set('Jesse', 'Pinkman')
+    cache.set('Walter', 'White')
+    cache.set('Jesse', 'James')
+    print(cache.get('Jesse'))  # вернёт 'James'
+    cache.rem('Walter')
+    print(cache.get('Walter'))  # вернёт ''
+
+if __name__ == "__main__":
+    main()

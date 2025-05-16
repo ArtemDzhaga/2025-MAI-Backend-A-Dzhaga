@@ -168,3 +168,20 @@ class Template(models.Model):
 
     def __str__(self):
         return self.name
+
+class Favorite(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favorites')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='favorited_by', null=True, blank=True)
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='favorited_by', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = [
+            ('user', 'project'),
+            ('user', 'task')
+        ]
+
+    def __str__(self):
+        if self.project:
+            return f"{self.user.username} favorited project {self.project.name}"
+        return f"{self.user.username} favorited task {self.task.title}"
